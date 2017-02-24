@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "windData = testWind\nwindDir = testDirWind\n\nend = dim(windData)[1]\nstartWindow = 1\nendWindow = 40\nwindowLength = endWindow\n\ntimeSeries <- vector()\nwhile(endWindow < end) {\n  \n  m <- windData[startWindow:endWindow, 1:11, 1]\n  x <- vector()\n  for(i in seq(nrow(m))) {\n   x <- c(x, mean(m[i, 1:11])) \n  }\n  y <- windData[startWindow:endWindow, 12, 1]\n  startWindow = startWindow + 1\n  endWindow = endWindow + 1\n  df = data.frame(x, y)\n  \n  timeSeries <- c(timeSeries, cor(df, method = \"pearson\")[2])\n}\n\nplot(1:length(timeSeries), timeSeries, type = 'l', col = \"red\")\nabline(h = 0)\nabline(v = seq(1,7000, by = 365))\n#plot(1:1000, timeSeries[1:1000])\nhighCorrelation <- which(timeSeries[1:1000] >= 0.6)\n\n#timeSlice = as.integer(highCorrelation[1])\nn = windDir[818:858, 1:11,1]\navgDir <- vector()\nfor(i in seq(nrow(n))) {\n  mean = mean(n[i, 1:11])\n  if(mean < 0) {\n    mean = mean + 360\n  }\n  avgDir <- c(avgDir, mean) \n}\n\n#direction = c(\"N\",\"NNE\",\"NE\",\"ENE\",\"E\",\"ESE\", \"SE\", \"SSE\",\"S\",\"SSW\",\"SW\",\"WSW\",\"W\",\"WNW\",\"NW\",\"NNW\")\n#avgDir <- lapply(avgDir, function(p){ direction[as.integer((p/22.5)+.5) %% 16]})\n\nm <- windData[818:858,,1]\navgWind <- vector()\nobsWind <- m[, 12]\nfor(i in seq(nrow(m))) {\n  avgWind <- c(avgWind, mean(m[i, 1:11])) \n}\n\nplot(avgWind, type = \"o\", col = \"red\")\n#plot the Observation data\nlines(obsWind, type = \"o\")\n\n#see if wind direction of influence (Or is it seasonal?) Try to understand this\n#spec.pgram (dft with squared coefficients)\n#45 degree bins instead. Check for correlation within bins\n#rose diagram --> correlation is a function of direction.Between obs and forecast\n#Plot season\n#do 2 and 3 day ahead as",
+    "created" : 1474640375955.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2693055034",
+    "id" : "86C26982",
+    "lastKnownWriteTime" : 1474657684,
+    "last_content_update" : 1474657683411,
+    "path" : "G:/Code/rolling.R",
+    "project_path" : "rolling.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library(ncdf4)\nlibrary(abind)\n\noptions(scipen=999)\n\n#Format the observations\nformatDate <- function(obs) {\n  #Time conversion\n  obs$Date <- as.POSIXct(strptime(paste(obs$Date, obs$Hour, sep = \" \"), tz =\"America/Denver\", \"%m/%d/%Y %H\"))\n  obs$Date <- format(obs$Date, tz=\"UTC\", usetz = FALSE)\n  obs$Date <- gsub(\"-| |:|[^0-9]\", \"\", obs$Date)\n  obs$Date <- substr(obs$Date, 1, nchar(obs$Date) - 4)\n  \n  obs <- obs[as.numeric(obs$Date) %% 100 == 0,]\n  obs$Wind.Speed <- as.numeric(as.character(obs$Wind.Speed))\n  return(obs)\n}\n\nu <- nc_open(\"u80mOneThree.nc\")\nv <- nc_open(\"v80mOneThree.nc\")\n\nu_time <- ncvar_get(u,\"intTime\")\nu_valid <- ncvar_get(u, \"intValidTime\")\nu_data <- ncvar_get(u,\"U-component_of_wind_height_above_ground_80m\")\nv_time <- ncvar_get(v,\"intTime\")\nv_valid <- ncvar_get(v, \"intValidTime\")\nv_data <- ncvar_get(v,\"V-component_of_wind_height_above_ground_80m\")\n\n#Get the absolute wind speed\nabsoluteWind <- sqrt(u_data^2 + v_data^2)\ndirectionWind <- atan2(u_data, v_data)*180/pi\nabsoluteWind <- abind(aperm(absoluteWind, c(1,3,2)), v_valid)\ndirectionWind <- abind(aperm(directionWind, c(1,3,2)), v_valid)\n\n#Get the observed windspeeds\nobs <- formatDate(read.csv(\"WindData.csv\"))\n\n#find just the 24 hour, 48 hour, and 72 hour forecasts\ntestWind <- absoluteWind[c(1,9,17),,]\ntestDirWind <- directionWind[c(1,9,17),,]\n\n#Replace all the time stamps with the appropriate observations\nfor(i in seq(length(testWind[1,,12])))\n{\n  for(j in 1:3) {\n    if(length(which(obs$Date == testWind[j,i,12])) != 0) {\n      testWind[j,i,12] <- obs[which(obs$Date == testWind[j,i,12]), 3]\n    }\n    else {\n      testWind[j,i,12] <- NA\n    }\n  }\n}\n\nfor(i in seq(length(testDirWind[1,,12])))\n{\n  for(j in 1:3) {\n    if(length(which(obs$Date == testDirWind[j,i,12])) != 0) {\n      testDirWind[j,i,12] <- obs[which(obs$Date == testDirWind[j,i,12]), 3]\n    }\n    else {\n      testDirWind[j,i,12] <- NA\n    }\n  }\n}\n\n\n#Format it so that the gefs.R can read it\ntestWind <- aperm(testWind, c(2,3,1))\ntestDirWind <- aperm(testDirWind, c(2,3,1))\n\nsave(testWind, file = \"GEFS_NREL_Wind_Data.RData\")\nsave(testDirWind, file = \"GEFS_NREL_Wind_Dir_Data.RData\")\nnc_close(v)\nrm(u)\nrm(v)\n\n#is(mydata)\n#dim(mydata)",
+    "created" : 1474639442230.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "615748878",
+    "id" : "51C5D54B",
+    "lastKnownWriteTime" : 1474640106,
+    "last_content_update" : 1474640104971,
+    "path" : "G:/Code/load.R",
+    "project_path" : "load.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

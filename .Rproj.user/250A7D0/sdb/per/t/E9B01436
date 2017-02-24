@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "# formatDate <- function(obs) {\n#   obs <- obs[obs$Hour == 0,]\n#   obs$Date <- gsub(\"-\", \"\", paste(as.Date(obs$Date, \"%m/%d/%Y\"), \"00\", sep= \"\"))\n#   obs$Wind.Speed <- as.numeric(as.character(obs$Wind.Speed))\n#   return(obs)\n# }\n# \n# obs <- formatDate(read.csv(\"WindData.csv\"))\n\n\nvec <- vector()\n\nfor(i in 7070 : 7101) {\n  vec <- c(vec, mean(testWind[i, 1:11, 1]))\n}\n\n#Plot the Ensemble member forecast\nplot(vec, type = \"o\", col = \"red\")\n#plot the Observation data\nlines(obs[7070:7101,3], type = \"o\")\n\n# plot(vec, obs[6101:7101,3])\n# print(cor(vec, obs[6101:7101, 3], use = \"pairwise\"))\n\n# plot(testWind[1:50, 1, 1], type = \"o\")\n# for(i in 2:11) {\n#   lines(testWind[1:50, i, 1], type = \"o\")\n# }\n\n#ccf\n\n",
+    "created" : 1474645678599.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "309691965",
+    "id" : "E9B01436",
+    "lastKnownWriteTime" : 1472235708,
+    "last_content_update" : 1472235708,
+    "path" : "G:/Code/PlotVerification.R",
+    "project_path" : "PlotVerification.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
