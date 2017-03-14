@@ -12,6 +12,15 @@ removeNA <- function (testWind) {
   return(testWind[-flag,,])
   
 }
+mae <- function(error)
+{
+  mean(abs(error))
+}
+rmse <- function(error)
+{
+  sqrt(mean(error^2))
+}
+
 
 windData = testWind
 windDir  = testDirWind
@@ -94,7 +103,7 @@ crps.gamma <- function(beta, obs, dirMean, ensMean, ensVar){
 #                    ensVar    = apply(windData[ind.train,1:11,lt],1,var2),
 #                    method    = "L-BFGS-B",
 #                    lower     = c(2e-3, 0, 2e-3, 0, -pi, 0),
-#                    upper     = c(  15, 5,   20, 5, 5, pi, 100),
+#                    upper     = c(  15, 5,   20, 5, 20, pi, 100),
 #                    control = list(factr=1e-5/.Machine$double.eps))
 # 
 #       par0 <- est$par
@@ -102,6 +111,7 @@ crps.gamma <- function(beta, obs, dirMean, ensMean, ensVar){
 #     }
 #   }
 # }
+# 
 
 
 
@@ -110,20 +120,21 @@ crps.gamma <- function(beta, obs, dirMean, ensMean, ensVar){
 
 
 
-
-lowerBound = 0.4
-upperBound = 0.7
+lowerBound = 0.05
+upperBound = 0.95
 
 startWindow = 5900
 endWindow = 6000
 count <- 0
+intervals <- c()
 storeCRPSvonMises <- c()
-
+Error <- 0
 for(testDay in startWindow:endWindow) {
   
   findTrainMonth = match(init.dates[testDay] %/% 10000, months)
   
-  for(leadTime in 1:3) {
+  #TODO: Change lead time to 3 or so
+  for(leadTime in 1:1) {
     
     testPar <- optVar[findTrainMonth - 36,1,leadTime,]
     testForecast <- windData[testDay,1:11,leadTime]
@@ -140,7 +151,10 @@ for(testDay in startWindow:endWindow) {
     scale = 1/lambda
     
     observed = as.numeric(windData[testDay + 165, 12, leadTime])
+    meanOfGamma <- shape*scale
     
+    Error <- Error + rmse(meanOfGamma - observed)
+      
     crps1 <- observed*(2*pgamma(observed,shape=shape,scale=scale)-1) - shape*scale*(2*pgamma(observed,shape=shape+1,scale=scale)-1)
     crps2 <- shape*scale*beta(.5,shape+.5)/pi
     crps <- crps1 - crps2
@@ -148,6 +162,8 @@ for(testDay in startWindow:endWindow) {
     storeCRPSvonMises <- c(storeCRPSvonMises, crps)
     
     percent <- qgamma(c(lowerBound, upperBound), shape=alpha, rate=lambda)
+    intervalWidth <- percent[2] - percent[1]
+    intervals <- c(intervals, intervalWidth)
     
     if(!all(is.na(percent))) {
       if(observed > percent[1] & observed < percent[2]) {
@@ -156,4 +172,24 @@ for(testDay in startWindow:endWindow) {
     }
   }
 }
-print(count/300)
+print(count/100)
+print(Error)
+print(mean(intervals))
+#gamma interval widths and coverages
+#MAE (median of gamma - observation) if not MSE (obs versus mean of gamma)
+
+#Coverage from 0.05 to 0.95 theoretical is 0.87
+#MAE = 257.8614
+
+
+#Check to see if there is one bump
+#Compute the bias in different directions
+#Exploratory plots
+#Interaction terms between von mises dist and forecast mean
+#Refit the model without the intercept term (does it decrease kappa)
+#Interaction term instead of the forecast mean (beta1*vonmises + beta2(vonmises * forecast mean))
+#Cross-validation to other data
+#use more than just four years
+#Take a look to see if the means of the von mises are the same or no (force alphas to equal to each other)
+#Use CRPS as well
+#PIT histograms to check to see gamma and normal (to see which one is better)

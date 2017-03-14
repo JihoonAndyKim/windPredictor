@@ -3,3 +3,5 @@
 *.RProj
 *.RData
 *.PNG
+.Rproj.user
+.Rhistory
