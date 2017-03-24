@@ -18,8 +18,8 @@ formatDate <- function(obs) {
   return(obs)
 }
 
-u <- nc_open("u80mOneThree.nc")
-v <- nc_open("v80mOneThree.nc")
+u <- nc_open("data/u80mOneThree.nc")
+v <- nc_open("data/v80mOneThree.nc")
 
 u_time <- ncvar_get(u,"intTime")
 u_valid <- ncvar_get(u, "intValidTime")
@@ -35,7 +35,7 @@ absoluteWind <- abind(aperm(absoluteWind, c(1,3,2)), v_valid)
 directionWind <- abind(aperm(directionWind, c(1,3,2)), v_valid)
 
 #Get the observed windspeeds
-obs <- formatDate(read.csv("WindData.csv"))
+obs <- formatDate(read.csv("data/WindData.csv"))
 
 #find just the 24 hour, 48 hour, and 72 hour forecasts
 testWind <- absoluteWind[c(1,9,17),,]
@@ -133,8 +133,8 @@ for(i in 1:7232) {
   }
 }
 
-save(testWind, file = "GEFS_NREL_Wind_Data.RData")
-save(testDirWind, file = "GEFS_NREL_Wind_Dir_Data.RData")
+save(testWind, file = "data/GEFS_NREL_Wind_Data.RData")
+save(testDirWind, file = "data/GEFS_NREL_Wind_Dir_Data.RData")
 nc_close(v)
 rm(u)
 rm(v)
